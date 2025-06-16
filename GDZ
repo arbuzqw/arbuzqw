@@ -1,0 +1,66 @@
+ПОДКЛЮЧЕНИЕ К БД
+public partial class DBMechanicEntities : DbContext
+{
+    private static DBMechanicEntities _context;
+    public DBMechanicEntities()
+        : base("name=DBMechanicEntities")
+    {
+    }
+ 
+    public static DBMechanicEntities GetContext()
+    {
+        if ( _context == null )
+            _context = new DBMechanicEntities();
+        return _context;
+    }
+ 
+АВТОРИЗАЦИЯ
+ public partial class Auth : Window
+ {
+     private DBMechanicEntities dbContext = new DBMechanicEntities();
+     public Auth()
+     {
+         InitializeComponent();
+     }
+ 
+     private void Button_Click(object sender, RoutedEventArgs e)
+     {
+         string login = tbLogin.Text;
+         string password = pbPass.Password;
+         var user = dbContext.Пользователи.FirstOrDefault(u => u.Логин == login && u.Пароль == password);
+         if (user != null)
+         {
+             MessageBox.Show("Авторизация успешна!");
+             if (user.Должность == "Admin")
+             {
+                 Admin m = new Admin();
+                 m.Show();
+                 this.Close();
+             }
+         }
+         else
+         {
+             MessageBox.Show("Неверный логин или пароль!");
+         }
+ПРОСМОТР
+<DataGrid Name="dg" Height="228" Width="772" Canvas.Left="14" Canvas.Top="188" HorizontalAlignment="Center" VerticalAlignment="Top" AutoGenerateColumns="False">
+    <DataGrid.Columns>
+        <DataGridTextColumn x:Name="d1" Header="№" Binding="{Binding Номер_заказа}" Width="*"/>
+        <DataGridTextColumn x:Name="d2" Header="Номер клиента" Binding="{Binding Телефон_клиента}" Width="*"/>
+        <DataGridTextColumn x:Name="d3" Header="Гос. номер" Binding="{Binding Гос_номер}" Width="*"/>
+        <DataGridTextColumn x:Name="d4" Header="Марка" Binding="{Binding Марка_авто}" Width="*"/>
+        <DataGridTextColumn x:Name="d5" Header="Модель" Binding="{Binding Модель_авто}" Width="*"/>
+        <DataGridTextColumn x:Name="d6" Header="Год выпуска" Binding="{Binding Год_выпуска}" Width="*"/>
+        <DataGridTextColumn x:Name="d7" Header="Кол-во повреждений" Binding="{Binding Количество_повреждений}" Width="*"/>
+        <DataGridTextColumn x:Name="d8" Header="Описание повреждений" Binding="{Binding Описание_повреждений}" Width="*"/>
+        <DataGridTextColumn x:Name="d9" Header="Заказ детали" Binding="{Binding Заказ_детали}" Width="*"/>
+        <DataGridTextColumn x:Name="d10" Header="Жидкости" Binding="{Binding Жидкости_авто}" Width="*"/>
+        <DataGridTextColumn x:Name="d11" Header="Дата заказа" Binding="{Binding Дата_заказа}" Width="*"/>
+        <DataGridTextColumn x:Name="d12" Header="Статус заказа" Binding="{Binding Статус_заказа}" Width="*"/>
+        <DataGridTextColumn x:Name="d13" Header="Номер пользователя" Binding="{Binding Номер_пользователя}" Width="*"/>
+        <DataGridTextColumn x:Name="d14" Header="Итог стоимость" Binding="{Binding Итоговая_стоимость}" Width="*"/>
+    </DataGrid.Columns>
+</DataGrid>
+С# для синхронизации с БД
+dg.ItemsSource = DBMechanicEntities.GetContext().Заказы.ToList();
+
