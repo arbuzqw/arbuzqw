@@ -63,4 +63,5 @@ public partial class DBMechanicEntities : DbContext
 </DataGrid>
 С# для синхронизации с БД
 dg.ItemsSource = DBMechanicEntities.GetContext().Заказы.ToList();
-
+ПЕРЕХОД МЕЖДУ ОКНАМИ
+fr.NavigationService.Navigate(new PageUchet());
