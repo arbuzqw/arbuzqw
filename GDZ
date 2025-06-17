@@ -65,3 +65,82 @@ public partial class DBMechanicEntities : DbContext
 dg.ItemsSource = DBMechanicEntities.GetContext().Заказы.ToList();
 ПЕРЕХОД МЕЖДУ ОКНАМИ
 fr.NavigationService.Navigate(new PageUchet());
+УДАЛЕНИЕ
+private void BtDelete_Click(object sender, RoutedEventArgs e)
+        {
+            var item = VodyatelsGrid.SelectedItems.Cast<Автомобили>().ToList();
+            if (MessageBox.Show($"Вы точно хотите удалить элемент?\nЭто может вызвать необратимые последствия!", "Внимание!",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    foreach (var removing in item)
+                    {
+                        Автомобили _item = entities.Автомобили
+                             .Where(c => c.ID == removing.ID)
+                             .FirstOrDefault();
+
+                        entities.Автомобили.Remove(_item);
+                        entities.SaveChanges();
+                    }
+
+                    MessageBox.Show("Удалено!");
+
+                    VodyatelsGrid.ItemsSource = entities.Автомобили.ToList();
+                }
+                catch (Exception ex)
+                {
+                    // Сообщение об ошибке, если она есть
+                    MessageBox.Show(ex.Message.ToString());
+                }
+            }
+РЕДАКТИРОВАНИЕ
+private void BtEdit_Click(object sender, RoutedEventArgs e)
+ {
+     _ = new Автомобили();
+     Автомобили item = (sender as Button).DataContext as Автомобили;
+
+     Application.Current.Properties["AddEditItemId"] = item.ID;
+     App.status = false;
+     NavigationService.Navigate(new AutoAddEdit(item));
+ }
+ 
+
+Другое окно куда отправляется айди для заполнения полей для редактирования
+
+ private readonly GIBDD_DBEntities entities = new GIBDD_DBEntities();
+ private readonly int itemid = Convert.ToInt32(Application.Current.Properties["AddEditItemId"]);
+ private readonly Автомобили _item = new Автомобили();
+ public AutoAddEdit(Автомобили авто)
+ {
+     InitializeComponent();
+     cbSotr.ItemsSource = entities.Водители.ToList();
+     Автомобили item = entities.Автомобили.FirstOrDefault(i => i.ID == itemid);
+     if (App.status == false)
+     {
+         DataContext = item;
+     }
+     else if (App.status == true)
+     {
+         DataContext = _item;
+
+     }
+ДОБАВЛЕНИЕ
+private void Button_Click(object sender, RoutedEventArgs e)
+  {
+      DBMechanicEntities context = new DBMechanicEntities();
+      var user_add = new Пользователи();
+      user_add.Номер_пользователя = int.Parse(tbId.Text);
+      user_add.Логин = tbLogin.Text;
+      user_add.Пароль = tbPass.Text;
+      user_add.Фамилия = tbFam.Text;
+      user_add.Имя = tbName.Text;
+      user_add.Отчество = tbLastName.Text;
+      user_add.Дата_рождения = Convert.ToDateTime(tbDR.Text);
+      user_add.Эл_почта = tbMail.Text;
+      user_add.Должность = tbDol.Text;
+      DBMechanicEntities.GetContext().Пользователи.Add(user_add);
+      DBMechanicEntities.GetContext().SaveChanges();
+      MessageBox.Show("Пользователь добавлен");
+      this.Close();
+  }
