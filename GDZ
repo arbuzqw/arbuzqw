@@ -15,34 +15,43 @@ public partial class DBMechanicEntities : DbContext
     }
  
 АВТОРИЗАЦИЯ
- public partial class Auth : Window
- {
-     private DBMechanicEntities dbContext = new DBMechanicEntities();
-     public Auth()
-     {
-         InitializeComponent();
-     }
- 
-     private void Button_Click(object sender, RoutedEventArgs e)
-     {
-         string login = tbLogin.Text;
-         string password = pbPass.Password;
-         var user = dbContext.Пользователи.FirstOrDefault(u => u.Логин == login && u.Пароль == password);
-         if (user != null)
-         {
-             MessageBox.Show("Авторизация успешна!");
-             if (user.Должность == "Admin")
-             {
-                 Admin m = new Admin();
-                 m.Show();
-                 this.Close();
-             }
-         }
-         else
-         {
-             MessageBox.Show("Неверный логин или пароль!");
-         }
-ПРОСМОТР
+        private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
+        {
+            string username = tbLogin.Text;
+            string password = pbPassword.Password;
+            var user = dbdse.Сотрудники.FirstOrDefault(u => u.Логин == username && u.Пароль == password);
+
+            if (user != null)
+            {
+               if (user.Должность == "Оператор")
+                {
+                    MessageBox.Show("Авторизация успешна!");
+                    _Windows.Operator operatorwindow = new Operator();
+                    operatorwindow.Show();
+                    this.Close();
+                }
+                if (user.Должность == "Заместитель начальника")
+                {
+                    MessageBox.Show("Авторизация успешна!");
+                    _Windows.Chief chiefwindow = new Chief();
+                    chiefwindow.Show();
+                    this.Close();
+                }
+                if (user.Должность == "Начальник охраны")
+                {
+                    MessageBox.Show("Авторизация успешна!");
+                    _Windows.Chief chiefwindow = new Chief();
+                    chiefwindow.Show();
+                    this.Close();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Неверное имя пользователя или пароль!");
+            }
+        }
+
+Таблица
 <DataGrid Name="dg" Height="228" Width="772" Canvas.Left="14" Canvas.Top="188" HorizontalAlignment="Center" VerticalAlignment="Top" AutoGenerateColumns="False">
     <DataGrid.Columns>
         <DataGridTextColumn x:Name="d1" Header="№" Binding="{Binding Номер_заказа}" Width="*"/>
@@ -61,91 +70,126 @@ public partial class DBMechanicEntities : DbContext
         <DataGridTextColumn x:Name="d14" Header="Итог стоимость" Binding="{Binding Итоговая_стоимость}" Width="*"/>
     </DataGrid.Columns>
 </DataGrid>
+
 С# для синхронизации с БД
 dg.ItemsSource = DBMechanicEntities.GetContext().Заказы.ToList();
+
 ПЕРЕХОД МЕЖДУ ОКНАМИ
-fr.NavigationService.Navigate(new PageUchet());
-УДАЛЕНИЕ
-private void BtDelete_Click(object sender, RoutedEventArgs e)
-        {
-            var item = VodyatelsGrid.SelectedItems.Cast<Автомобили>().ToList();
-            if (MessageBox.Show($"Вы точно хотите удалить элемент?\nЭто может вызвать необратимые последствия!", "Внимание!",
-                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+frWork.Navigate(new _Pages.Dislocations());
+Окно добавления и редактирования (основной метод)
+            var disl = _DataBase.dsEntities.GetContext().Дислокации.FirstOrDefault(i => i.Номер_дислокации == editClass.id);
+            InitializeComponent();
+            if (editClass.status == false)
             {
-                try
-                {
-                    foreach (var removing in item)
-                    {
-                        Автомобили _item = entities.Автомобили
-                             .Where(c => c.ID == removing.ID)
-                             .FirstOrDefault();
-
-                        entities.Автомобили.Remove(_item);
-                        entities.SaveChanges();
-                    }
-
-                    MessageBox.Show("Удалено!");
-
-                    VodyatelsGrid.ItemsSource = entities.Автомобили.ToList();
-                }
-                catch (Exception ex)
-                {
-                    // Сообщение об ошибке, если она есть
-                    MessageBox.Show(ex.Message.ToString());
-                }
+                cbDislocationStation.Text = disl.Станция_дислокации.ToString();
+                tbDateLastOperation.Text = disl.Дата_последней_операции.ToString();
+                tbLastOperation.Text = disl.Последняя_операция.ToString();
+                tbIdPark.Text = disl.Номер_парка.ToString();
+                tbIdWay.Text = disl.Номер_пути.ToString();
+                tbIdTrain.Text = disl.Номер_поезда.ToString();
+                tbIdVan.Text = disl.Номер_вагона.ToString();
+                tbIdCargo.Text = disl.Номер_груза.ToString();
+                cbDestinationStation.Text = disl.Станция_назначения.ToString();
             }
-РЕДАКТИРОВАНИЕ
-private void BtEdit_Click(object sender, RoutedEventArgs e)
- {
-     _ = new Автомобили();
-     Автомобили item = (sender as Button).DataContext as Автомобили;
 
-     Application.Current.Properties["AddEditItemId"] = item.ID;
-     App.status = false;
-     NavigationService.Navigate(new AutoAddEdit(item));
- }
- 
+Добавление - Редактирование
+private void SaveButton_Click(object sender, RoutedEventArgs e)
+{
+    try
+    {
+        if (editClass.status == false)
+        {
+            var cargo = _DataBase.dsEntities.GetContext().Грузы.FirstOrDefault(i => i.Номер_груза == editClass.id);
+            cargo.Номер_груза = int.Parse(tbIdCargo.Text);
+            cargo.Описание = tbDescription.Text;
+            cargo.Вес = Convert.ToDouble(tbWeight.Text);
+            _DataBase.dsEntities.GetContext().SaveChanges();
+            MessageBox.Show("Успешное редактирование");
+        }
+        else
+        {
+            _DataBase.dsEntities context = new _DataBase.dsEntities();
+            var cargo_add = new _DataBase.Грузы();
+            cargo_add.Номер_груза = int.Parse(tbIdCargo.Text);
+            cargo_add.Описание = tbDescription.Text;
+            cargo_add.Вес = Convert.ToDouble(tbWeight.Text);
+            _DataBase.dsEntities.GetContext().SaveChanges();
+            _DataBase.dsEntities.GetContext().Грузы.Add(cargo_add);
+            _DataBase.dsEntities.GetContext().SaveChanges();
+            MessageBox.Show("Успешное добавление");
+        }
+        Close();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show("Ошибка! " + ex.Message);
+    }
+}
 
-Другое окно куда отправляется айди для заполнения полей для редактирования
+Код кнопок и вывода таблицы страниц:
+    public Invoice()
+    {
+        InitializeComponent();
+        dgInvoice.ItemsSource = _DataBase.dsEntities.GetContext().Накладные.ToList();
+    }
 
- private readonly GIBDD_DBEntities entities = new GIBDD_DBEntities();
- private readonly int itemid = Convert.ToInt32(Application.Current.Properties["AddEditItemId"]);
- private readonly Автомобили _item = new Автомобили();
- public AutoAddEdit(Автомобили авто)
- {
-     InitializeComponent();
-     cbSotr.ItemsSource = entities.Водители.ToList();
-     Автомобили item = entities.Автомобили.FirstOrDefault(i => i.ID == itemid);
-     if (App.status == false)
-     {
-         DataContext = item;
-     }
-     else if (App.status == true)
-     {
-         DataContext = _item;
+    private void AddButton_Click(object sender, RoutedEventArgs e)
+    {
+        _Windows.InvoiceAddEdit winAdd = new _Windows.InvoiceAddEdit();
+        editClass.status = true;
+        winAdd.Show();
+        dgInvoice.ItemsSource = _DataBase.dsEntities.GetContext().Накладные.ToList();
+    }
 
-     }
-ДОБАВЛЕНИЕ
-private void Button_Click(object sender, RoutedEventArgs e)
-  {
-      DBMechanicEntities context = new DBMechanicEntities();
-      var user_add = new Пользователи();
-      user_add.Номер_пользователя = int.Parse(tbId.Text);
-      user_add.Логин = tbLogin.Text;
-      user_add.Пароль = tbPass.Text;
-      user_add.Фамилия = tbFam.Text;
-      user_add.Имя = tbName.Text;
-      user_add.Отчество = tbLastName.Text;
-      user_add.Дата_рождения = Convert.ToDateTime(tbDR.Text);
-      user_add.Эл_почта = tbMail.Text;
-      user_add.Должность = tbDol.Text;
-      DBMechanicEntities.GetContext().Пользователи.Add(user_add);
-      DBMechanicEntities.GetContext().SaveChanges();
-      MessageBox.Show("Пользователь добавлен");
-      this.Close();
-  }
-EDITCLASS.CS
-internal class editClass
+    private void DeleteButton_Click(object sender, RoutedEventArgs e)
+    {
+        var remove = dgInvoice.SelectedItems.Cast<Накладные>().ToList();
+        if (MessageBox.Show($"Вы точно хотите удалить {remove.Count()} количество элементов?", "Внимание!", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        {
+            try
+            {
+                dgInvoice.ItemsSource = _DataBase.dsEntities.GetContext().Накладные.RemoveRange(remove);
+                _DataBase.dsEntities.GetContext().SaveChanges();
+                MessageBox.Show("Данные успешно удалены!");
+                dgInvoice.ItemsSource = _DataBase.dsEntities.GetContext().Накладные.ToList();
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка!");
+            }
+        }
+        else
+        {
+            MessageBox.Show("Выберите элемент или несколько элементов!");
+        }
+    }
+private void EditButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var id = dgInvoice.SelectedItem as _DataBase.Накладные;
+            if (id != null)
+            {
+                editClass.id = id.Номер_накладной;
+                _Windows.InvoiceAddEdit winEdit = new _Windows.InvoiceAddEdit();
+                editClass.status = false;
+                winEdit.Show();
+                dgInvoice.ItemsSource = _DataBase.dsEntities.GetContext().Накладные.ToList();
+            }
+            else { MessageBox.Show("Выберите элемент"); }
+
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Ошибка! " + ex.Message);
+        }
+        dgInvoice.ItemsSource = _DataBase.dsEntities.GetContext().Накладные.ToList();
+    }
+}
+
+Класс editClass.cs
+
+  internal class editClass
     {
         public static int id;
         public static bool status = true;
