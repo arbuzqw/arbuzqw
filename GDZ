@@ -50,6 +50,11 @@ public partial class DBMechanicEntities : DbContext
                 MessageBox.Show("Неверное имя пользователя или пароль!");
             }
         }
+private _DataBase.dsEntities dbdse = new _DataBase.dsEntities();
+public Auth()
+{
+    InitializeComponent();
+}
 
 Таблица
 <DataGrid Name="dg" Height="228" Width="772" Canvas.Left="14" Canvas.Top="188" HorizontalAlignment="Center" VerticalAlignment="Top" AutoGenerateColumns="False">
